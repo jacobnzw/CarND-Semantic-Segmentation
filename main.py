@@ -37,13 +37,13 @@ def load_vgg(sess, vgg_path):
 
     """
 
-    # TODO Use tf.saved_model.loader.load to load the model and weights
     vgg_tag = 'vgg16'
     vgg_input_tensor_name = 'image_input:0'
     vgg_keep_prob_tensor_name = 'keep_prob:0'
     vgg_layer3_out_tensor_name = 'layer3_out:0'
     vgg_layer4_out_tensor_name = 'layer4_out:0'
     vgg_layer7_out_tensor_name = 'layer7_out:0'
+
     tf.saved_model.loader.load(sess, [vgg_tag], vgg_path)
     in_ten = sess.graph.get_tensor_by_name(vgg_input_tensor_name)
     kp_ten = sess.graph.get_tensor_by_name(vgg_keep_prob_tensor_name)
@@ -77,8 +77,11 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     :
         The Tensor for the last layer of output
     """
-
-    # TODO: Implement function
+    # TODO: Build the upscaling part of the FCN?
+    tf.add()
+    tf.layers.conv2d_transpose(vgg_layer3_out, num_classes, 2, strides=(2, 2))
+    tf.layers.conv2d_transpose(vgg_layer4_out, num_classes, 8, strides=(2, 2))
+    tf.layers.conv2d_transpose(vgg_layer7_out, num_classes, 16, strides=(8, 8))
     return None
 
 
@@ -88,16 +91,16 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
 
     Parameters
     ----------
-    nn_last_layer :
-        TF Tensor of the last layer in the neural network
+    nn_last_layer : TF Tensor
+         The last layer in the neural network
 
-    correct_label :
-        TF Placeholder for the correct label image
+    correct_label : TF Placeholder
+         The correct label image
 
-    learning_rate :
-        TF Placeholder for the learning rate
+    learning_rate : TF Placeholder
+         The learning rate
 
-    num_classes :
+    num_classes : int
         Number of classes to classify
 
     Returns
@@ -107,6 +110,8 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
 
     """
     # TODO: Implement function
+    logits = tf.reshape(nn_last_layer, (-1, num_classes))
+    cross_entropy_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits, correct_label))
     return None, None, None
 
 
@@ -176,7 +181,8 @@ def run():
         #  https://datascience.stackexchange.com/questions/5224/how-to-prepare-augment-images-for-neural-network
 
         # TODO: Build NN using load_vgg, layers, and optimize function
-        load_vgg(sess, vgg_path)
+        vgg_in, vgg_kp, vgg_l3, vgg_l4, vgg_l7 = load_vgg(sess, vgg_path)
+        layers(vgg_l3, vgg_l4, vgg_l7, 2)
 
         # TODO: Train NN using the train_nn function
 
