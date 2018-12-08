@@ -250,11 +250,10 @@ def run():
         # save inference data using
         helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, vgg_kp, vgg_in)
 
-
-tests.test_load_vgg(load_vgg, tf)
-tests.test_layers(layers)
-tests.test_optimize(optimize)
-tests.test_train_nn(train_nn)
+# tests.test_load_vgg(load_vgg, tf)
+# tests.test_layers(layers)
+# tests.test_optimize(optimize)
+# tests.test_train_nn(train_nn)
 
 if __name__ == '__main__':
     run()
