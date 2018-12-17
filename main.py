@@ -142,6 +142,9 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
 
     # loss function
     cross_entropy_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=correct_label))
+    # add regularization term
+    reg_losses = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
+    loss = cross_entropy_loss + 0.01*sum(reg_losses)
 
     # Adam optimizer with given learning rate
     optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
@@ -149,7 +152,7 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
     # training operation: iteration of Adam optimizer on cross-entropy loss
     train_op = optimizer.minimize(cross_entropy_loss)
 
-    return logits, train_op, cross_entropy_loss
+    return logits, train_op, loss
 
 
 def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, input_image,
@@ -199,8 +202,8 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
         print("EPOCH {} ...".format(e + 1))
         for image, label in get_batches_fn(batch_size):
             _, loss = sess.run([train_op, cross_entropy_loss],
-                               feed_dict={input_image: image, correct_label: label, keep_prob: 0.5,
-                                          learning_rate: 0.0009})
+                               feed_dict={input_image: image, correct_label: label, keep_prob: 0.4,
+                                          learning_rate: 0.00009})
             print("Loss: = {:.3f}".format(loss))
         print()
 
@@ -222,7 +225,6 @@ def run():
     data_dir = './data'
     runs_dir = './runs'
 
-    tests.test_for_kitti_dataset(data_dir)
     # Download pretrained vgg model
     helper.maybe_download_pretrained_vgg(data_dir)
 
@@ -254,6 +256,7 @@ def run():
 # tests.test_layers(layers)
 # tests.test_optimize(optimize)
 # tests.test_train_nn(train_nn)
+# tests.test_for_kitti_dataset(data_dir)
 
 if __name__ == '__main__':
     run()
